@@ -59,5 +59,8 @@ CI builds every pull request; it must pass before merge.
 1. Move the **Unreleased** changelog entries under a new version heading.
 2. Tag and push: `git tag v1.2.0 && git push origin v1.2.0`.
 3. The Build workflow compiles the app, zips it and publishes a GitHub Release with the zip attached.
+4. Update the Homebrew cask in [aayushsolanki40/homebrew-tap](https://github.com/aayushsolanki40/homebrew-tap):
+   set `version` and `sha256` (`shasum -a 256 NotchIsland.zip`) in `Casks/notchisland.rb`, run
+   `brew style` and `brew audit --cask --online` on it, then commit and push.
 
 By contributing you agree that your contributions are licensed under the [MIT License](LICENSE).

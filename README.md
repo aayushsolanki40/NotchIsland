@@ -8,6 +8,7 @@ Live activities for music, timers, charging, AirPods and volume — rendered nat
 tucked into the notch when idle and springing open when something happens.
 
 [![Build](https://github.com/aayushsolanki40/NotchIsland/actions/workflows/build.yml/badge.svg)](https://github.com/aayushsolanki40/NotchIsland/actions/workflows/build.yml)
+[![Homebrew](https://img.shields.io/badge/brew-aayushsolanki40%2Ftap-FBB040?logo=homebrew&logoColor=white)](https://github.com/aayushsolanki40/homebrew-tap)
 [![Latest release](https://img.shields.io/github/v/release/aayushsolanki40/NotchIsland?sort=semver)](https://github.com/aayushsolanki40/NotchIsland/releases/latest)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black?logo=apple)
 ![Swift](https://img.shields.io/badge/Swift-5%20mode-F05138?logo=swift&logoColor=white)
@@ -45,6 +46,16 @@ tucked into the notch when idle and springing open when something happens.
 - Works best on a MacBook with a notch; other displays get a virtual notch or the floating pill
 
 ## Installation
+
+### Homebrew (recommended)
+
+```bash
+brew install --cask aayushsolanki40/tap/notchisland
+```
+
+That's it — the cask also clears the macOS quarantine flag, so the app opens without a
+Gatekeeper warning. Update with `brew upgrade --cask notchisland` and remove with
+`brew uninstall --cask notchisland` (add `--zap` to delete its preferences too).
 
 ### Download
 

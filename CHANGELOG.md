@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- Install with Homebrew: `brew install --cask aayushsolanki40/tap/notchisland`.
+
 ## [1.0.0] - 2026-10-24
 
 ### Added
