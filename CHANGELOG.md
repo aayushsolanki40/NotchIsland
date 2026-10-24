@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-24
+
 ### Fixed
 - Album art missing for some songs: Apple Music streaming tracks now get their cover from the iTunes
   Search API, Spotify covers that arrive late are retried, and the previous song's cover is cleared
@@ -26,5 +28,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Swipe (two-finger or click-drag) to hide an activity.
 - Menu bar menu with style, hover, launch-at-login and preview options.
 
-[Unreleased]: https://github.com/aayushsolanki40/NotchIsland/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/aayushsolanki40/NotchIsland/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/aayushsolanki40/NotchIsland/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/aayushsolanki40/NotchIsland/releases/tag/v1.0.0
