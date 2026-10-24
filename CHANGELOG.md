@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-24
+
 ### Added
 - App icon: a pill with equalizer bars beside a bubble holding album art.
 - Menu bar icon now matches the app icon (pill and bubble) and follows light/dark appearance.
@@ -32,6 +34,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Swipe (two-finger or click-drag) to hide an activity.
 - Menu bar menu with style, hover, launch-at-login and preview options.
 
-[Unreleased]: https://github.com/aayushsolanki40/NotchIsland/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/aayushsolanki40/NotchIsland/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/aayushsolanki40/NotchIsland/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/aayushsolanki40/NotchIsland/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/aayushsolanki40/NotchIsland/releases/tag/v1.0.0
