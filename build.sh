@@ -11,7 +11,7 @@ VERSION="${1:-}"
 FRAMEWORKS=(-framework IOKit -framework IOBluetooth -framework CoreAudio -framework AudioToolbox)
 
 rm -rf "$APP" build/obj
-mkdir -p "$APP/Contents/MacOS" build/obj
+mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" build/obj
 
 for arch in arm64 x86_64; do
   echo "Compiling $arch…"
@@ -22,6 +22,7 @@ lipo -create build/obj/NotchIsland-* -output "$APP/Contents/MacOS/NotchIsland"
 rm -rf build/obj
 
 cp Resources/Info.plist "$APP/Contents/Info.plist"
+cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 if [[ -n "$VERSION" ]]; then
   /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${VERSION#v}" "$APP/Contents/Info.plist"
 fi

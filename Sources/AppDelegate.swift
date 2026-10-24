@@ -22,8 +22,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setupStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "capsule.fill", accessibilityDescription: "NotchIsland")
+        statusItem.button?.image = Self.menuBarImage()
         rebuildMenu()
+    }
+
+    /// Pill plus bubble, the same shapes as the app icon, drawn as a template so it follows
+    /// the menu bar's light/dark appearance.
+    private static func menuBarImage() -> NSImage {
+        let image = NSImage(size: NSSize(width: 21, height: 18), flipped: false) { _ in
+            NSColor.black.setFill()
+            NSBezierPath(roundedRect: NSRect(x: 0.5, y: 5, width: 11, height: 8), xRadius: 4, yRadius: 4).fill()
+            NSBezierPath(ovalIn: NSRect(x: 12.5, y: 5, width: 8, height: 8)).fill()
+            return true
+        }
+        image.isTemplate = true
+        image.accessibilityDescription = "NotchIsland"
+        return image
     }
 
     private func rebuildMenu() {
