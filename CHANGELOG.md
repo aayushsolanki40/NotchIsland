@@ -10,6 +10,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Album art missing for some songs: Apple Music streaming tracks now get their cover from the iTunes
   Search API, Spotify covers that arrive late are retried, and the previous song's cover is cleared
   immediately on a track change.
+- Catalog lookup now searches the listener's own storefront and tolerates artist spelling variants,
+  so regional songs like Indian releases find their cover.
 
 ### Added
 - Install with Homebrew: `brew install --cask aayushsolanki40/tap/notchisland`.

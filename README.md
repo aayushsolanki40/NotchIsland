@@ -138,7 +138,7 @@ screen; a 30 Hz mouse check makes it click-through everywhere except over the is
   system-wide Now Playing API (MediaRemote) to its own apps, so browsers and other players can't be read.
 - **Album art** comes from the player. Apple Music *streaming* tracks and Spotify local files
   expose none, so for those NotchIsland looks the song up in Apple's public iTunes Search API,
-  sending only the song title and artist. Songs missing from that catalog keep the placeholder.
+  sending only the song title and artist (it tries your own region's store first). Songs missing from that catalog keep the placeholder.
 - **AirPods battery** comes from `system_profiler`, which may take a few seconds after connecting.
 - **Volume** — the system volume HUD still appears alongside the island.
 - **Live Activities from iPhone apps** (Uber, sports scores…), calls and Face ID are iOS-only and

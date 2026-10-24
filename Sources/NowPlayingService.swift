@@ -31,6 +31,9 @@ final class NowPlayingService: ObservableObject {
     private var artworkKey = ""
     private var artworkAttempts = 0
     private var artworkRetryAt = Date.distantPast
+    /// Catalog lookups, touched only on `queue`; misses are remembered so retries stay cheap.
+    private var catalogCache: [String: NSImage] = [:]
+    private var catalogMisses: Set<String> = []
     private var scripts: [Source: NSAppleScript] = [:]
     private var timer: Timer?
 
@@ -195,7 +198,7 @@ final class NowPlayingService: ObservableObject {
         }
         queue.async { [weak self] in
             guard let self else { return }
-            let image = self.localArtwork(source: source, track: track) ?? Self.catalogArtwork(for: track)
+            let image = self.localArtwork(source: source, track: track) ?? self.catalogArtwork(for: track, key: key)
             deliver(image)
         }
     }
@@ -217,29 +220,47 @@ final class NowPlayingService: ObservableObject {
     /// Apple Music streaming tracks and Spotify local files expose no artwork, so look the
     /// song up in Apple's public iTunes Search API (no account or key needed). A wrong cover is
     /// worse than none, so a hit must match the title exactly and share part of the artist name.
-    private static func catalogArtwork(for track: Track) -> NSImage? {
-        for term in ["\(track.title) \(track.artist)", track.title] {
-            guard let results = searchCatalog(term: term) else { continue }
-            let title = track.title.lowercased()
-            let wanted = artistTokens(track.artist)
-            let hit = results.first { result in
-                guard (result["trackName"] as? String)?.lowercased() == title else { return false }
-                let found = artistTokens(result["artistName"] as? String ?? "")
-                return wanted.contains { w in found.contains { $0.hasPrefix(w.prefix(4)) || w.hasPrefix($0.prefix(4)) } }
-            }
-            if let small = hit?["artworkUrl100"] as? String,
-               let big = URL(string: small.replacingOccurrences(of: "100x100", with: "600x600")),
-               let data = try? Data(contentsOf: big), let image = NSImage(data: data) {
-                return image
+    private func catalogArtwork(for track: Track, key: String) -> NSImage? {
+        if let cached = catalogCache[key] { return cached }
+        if catalogMisses.contains(key) { return nil }
+
+        let title = track.title.lowercased()
+        let wanted = Self.artistTokens(track.artist)
+        // iTunes search is picky: extra or misspelled words return nothing, and very common
+        // titles bury the right song, so widen from "title artist" to "title firstname" to "title".
+        var terms = ["\(track.title) \(track.artist)"]
+        if let first = wanted.first { terms.append("\(track.title) \(first)") }
+        terms.append(track.title)
+        // Regional releases often exist only in the listener's own storefront.
+        let region = Locale.current.region?.identifier ?? "US"
+        let countries = region == "US" ? ["US"] : [region, "US"]
+
+        for country in countries {
+            for term in terms {
+                guard let results = Self.searchCatalog(term: term, country: country) else { continue }
+                let hit = results.first { result in
+                    guard (result["trackName"] as? String)?.lowercased() == title else { return false }
+                    let found = Self.artistTokens(result["artistName"] as? String ?? "")
+                    return wanted.contains { w in found.contains { $0.hasPrefix(w.prefix(4)) || w.hasPrefix($0.prefix(4)) } }
+                }
+                if let small = hit?["artworkUrl100"] as? String,
+                   let big = URL(string: small.replacingOccurrences(of: "100x100", with: "600x600")),
+                   let data = try? Data(contentsOf: big), let image = NSImage(data: data) {
+                    if catalogCache.count > 40 { catalogCache.removeAll() }
+                    catalogCache[key] = image
+                    return image
+                }
             }
         }
+        catalogMisses.insert(key)
         return nil
     }
 
-    private static func searchCatalog(term: String) -> [[String: Any]]? {
+    private static func searchCatalog(term: String, country: String) -> [[String: Any]]? {
         var components = URLComponents(string: "https://itunes.apple.com/search")!
         components.queryItems = [URLQueryItem(name: "term", value: term),
                                  URLQueryItem(name: "entity", value: "song"),
+                                 URLQueryItem(name: "country", value: country),
                                  URLQueryItem(name: "limit", value: "25")]
         guard let url = components.url, let data = try? Data(contentsOf: url),
               let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
