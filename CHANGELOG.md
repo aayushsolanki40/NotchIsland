@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- App icon: a pill with equalizer bars beside a bubble holding album art.
+- Menu bar icon now matches the app icon (pill and bubble) and follows light/dark appearance.
+
 ## [1.0.1] - 2026-10-24
 
 ### Fixed

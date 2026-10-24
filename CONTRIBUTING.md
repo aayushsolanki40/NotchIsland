@@ -29,6 +29,16 @@ See [How it works](README.md#how-it-works) in the README. In short: services in 
 publish state, `IslandModel` decides what the island shows and how big it is, and `IslandView`
 draws it.
 
+### Changing the app icon
+
+The icon is drawn in code, so there are no design files to keep in sync. Edit
+`tools/make-icon.swift`, then regenerate the bundle icon and the README preview:
+
+```bash
+swift tools/make-icon.swift /tmp/AppIcon.iconset docs/images/app-icon.png
+iconutil -c icns /tmp/AppIcon.iconset -o Resources/AppIcon.icns
+```
+
 ### Adding a live activity
 
 1. Add a case to `Activity` in `IslandModel.swift` and give it a width in `compactSideWidth(for:)`.

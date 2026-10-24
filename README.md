@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/images/app-icon.png" alt="NotchIsland app icon" width="128">
+
 # NotchIsland
 
 **An iPhone-style Dynamic Island for your Mac's notch.**
@@ -126,6 +128,8 @@ Sources/
 ├── BluetoothService.swift           IOBluetooth connect notifications (+ battery via system_profiler)
 ├── VolumeService.swift              CoreAudio volume / mute listeners
 └── TimerService.swift               Countdown timer
+Resources/                           Info.plist and the generated AppIcon.icns
+tools/make-icon.swift                Draws the app icon in code and exports every macOS size
 ```
 
 The island is a single SwiftUI view whose size and corner radii are derived from the current
