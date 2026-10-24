@@ -26,6 +26,11 @@ final class NowPlayingService: ObservableObject {
     @Published private(set) var positionDate = Date()
 
     private let queue = DispatchQueue(label: "island.nowplaying")
+    /// Identifies the track whose artwork is shown or loading; includes Spotify's
+    /// artwork URL, which can arrive a moment after the title changes.
+    private var artworkKey = ""
+    private var artworkAttempts = 0
+    private var artworkRetryAt = Date.distantPast
     private var scripts: [Source: NSAppleScript] = [:]
     private var timer: Timer?
 
@@ -152,7 +157,6 @@ final class NowPlayingService: ObservableObject {
             }
             return
         }
-        let changed = newTrack.title != track?.title || newTrack.album != track?.album || snap.source != source
         withAnimation(IslandModel.spring) {
             source = snap.source
             track = newTrack
@@ -160,33 +164,90 @@ final class NowPlayingService: ObservableObject {
         }
         position = snap.position
         positionDate = Date()
-        if changed { loadArtwork(source: snap.source, track: newTrack) }
+
+        let key = [snap.source.rawValue, newTrack.title, newTrack.artist, newTrack.album, newTrack.artworkURL]
+            .joined(separator: "|")
+        if key != artworkKey {
+            artworkKey = key
+            artworkAttempts = 0
+            artworkRetryAt = .distantPast
+            // Drop the previous song's cover right away rather than show the wrong one.
+            if artwork != nil { withAnimation(.easeInOut(duration: 0.2)) { artwork = nil; accent = .white } }
+        }
+        // Retry a few times: players sometimes publish artwork a second after the title.
+        if artwork == nil, artworkAttempts < 4, Date() >= artworkRetryAt {
+            artworkAttempts += 1
+            artworkRetryAt = Date().addingTimeInterval(1.5)
+            loadArtwork(source: snap.source, track: newTrack, key: key)
+        }
     }
 
-    private func loadArtwork(source: Source, track: Track) {
+    private func loadArtwork(source: Source, track: Track, key: String) {
         let deliver: (NSImage?) -> Void = { [weak self] image in
             DispatchQueue.main.async {
-                guard let self, self.track?.title == track.title else { return }
+                // Ignore results for a song that has already changed.
+                guard let self, self.artworkKey == key, let image else { return }
                 withAnimation(.easeInOut(duration: 0.3)) {
                     self.artwork = image
-                    self.accent = image?.vibrantAverageColor.map(Color.init(nsColor:)) ?? .white
+                    self.accent = image.vibrantAverageColor.map(Color.init(nsColor:)) ?? .white
                 }
             }
         }
-        if source == .spotify, let url = URL(string: track.artworkURL) {
-            URLSession.shared.dataTask(with: url) { data, _, _ in
-                deliver(data.flatMap(NSImage.init(data:)))
-            }.resume()
-        } else if source == .music {
-            queue.async {
-                var err: NSDictionary?
-                let d = NSAppleScript(source: "tell application id \"com.apple.Music\" to get raw data of artwork 1 of current track")?
-                    .executeAndReturnError(&err)
-                deliver(err == nil ? d.flatMap { NSImage(data: $0.data) } : nil)
-            }
-        } else {
-            deliver(nil)
+        queue.async { [weak self] in
+            guard let self else { return }
+            let image = self.localArtwork(source: source, track: track) ?? Self.catalogArtwork(for: track)
+            deliver(image)
         }
+    }
+
+    /// Cover art the player itself exposes: Spotify's image URL, or Music's embedded artwork.
+    private func localArtwork(source: Source, track: Track) -> NSImage? {
+        switch source {
+        case .spotify:
+            guard let url = URL(string: track.artworkURL), !track.artworkURL.isEmpty else { return nil }
+            return (try? Data(contentsOf: url)).flatMap(NSImage.init(data:))
+        case .music:
+            var err: NSDictionary?
+            let d = NSAppleScript(source: "tell application id \"com.apple.Music\" to get raw data of artwork 1 of current track")?
+                .executeAndReturnError(&err)
+            return err == nil ? d.flatMap { NSImage(data: $0.data) } : nil
+        }
+    }
+
+    /// Apple Music streaming tracks and Spotify local files expose no artwork, so look the
+    /// song up in Apple's public iTunes Search API (no account or key needed). A wrong cover is
+    /// worse than none, so a hit must match the title exactly and share part of the artist name.
+    private static func catalogArtwork(for track: Track) -> NSImage? {
+        for term in ["\(track.title) \(track.artist)", track.title] {
+            guard let results = searchCatalog(term: term) else { continue }
+            let title = track.title.lowercased()
+            let wanted = artistTokens(track.artist)
+            let hit = results.first { result in
+                guard (result["trackName"] as? String)?.lowercased() == title else { return false }
+                let found = artistTokens(result["artistName"] as? String ?? "")
+                return wanted.contains { w in found.contains { $0.hasPrefix(w.prefix(4)) || w.hasPrefix($0.prefix(4)) } }
+            }
+            if let small = hit?["artworkUrl100"] as? String,
+               let big = URL(string: small.replacingOccurrences(of: "100x100", with: "600x600")),
+               let data = try? Data(contentsOf: big), let image = NSImage(data: data) {
+                return image
+            }
+        }
+        return nil
+    }
+
+    private static func searchCatalog(term: String) -> [[String: Any]]? {
+        var components = URLComponents(string: "https://itunes.apple.com/search")!
+        components.queryItems = [URLQueryItem(name: "term", value: term),
+                                 URLQueryItem(name: "entity", value: "song"),
+                                 URLQueryItem(name: "limit", value: "25")]
+        guard let url = components.url, let data = try? Data(contentsOf: url),
+              let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
+        return root["results"] as? [[String: Any]]
+    }
+
+    private static func artistTokens(_ name: String) -> [String] {
+        name.lowercased().components(separatedBy: CharacterSet.alphanumerics.inverted).filter { $0.count >= 4 }
     }
 }
 

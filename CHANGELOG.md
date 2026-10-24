@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Fixed
+- Album art missing for some songs: Apple Music streaming tracks now get their cover from the iTunes
+  Search API, Spotify covers that arrive late are retried, and the previous song's cover is cleared
+  immediately on a track change.
+
 ### Added
 - Install with Homebrew: `brew install --cask aayushsolanki40/tap/notchisland`.
 

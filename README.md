@@ -136,6 +136,9 @@ screen; a 30 Hz mouse check makes it click-through everywhere except over the is
 
 - **Now Playing** only supports Music and Spotify. Since macOS 15.4 Apple restricts the
   system-wide Now Playing API (MediaRemote) to its own apps, so browsers and other players can't be read.
+- **Album art** comes from the player. Apple Music *streaming* tracks and Spotify local files
+  expose none, so for those NotchIsland looks the song up in Apple's public iTunes Search API,
+  sending only the song title and artist. Songs missing from that catalog keep the placeholder.
 - **AirPods battery** comes from `system_profiler`, which may take a few seconds after connecting.
 - **Volume** — the system volume HUD still appears alongside the island.
 - **Live Activities from iPhone apps** (Uber, sports scores…), calls and Face ID are iOS-only and
